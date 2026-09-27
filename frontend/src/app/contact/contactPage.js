@@ -583,7 +583,15 @@ export default function ContactPage() {
                 </button>
 
                 <p className="font-body text-xs leading-5 text-white/35">
-                  Your details will only be used to respond to your enquiry.
+                  Your information will be used to process and respond to your reservation
+                  or enquiry. By submitting this form, you acknowledge our{" "}
+                  <Link
+                    href="/privacy-policy"
+                    className="text-primary underline underline-offset-2 transition-colors hover:text-white"
+                  >
+                    Privacy Policy
+                  </Link>
+                  .
                 </p>
               </form>
             </div>
