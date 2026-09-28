@@ -45,7 +45,7 @@ export default function ReservationCTA() {
       className="relative overflow-hidden bg-mango-gold py-24 text-wok-black sm:py-28 lg:py-32"
     >
       {/* Background Typography */}
-      <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 select-none font-display md:text-[12rem] text-[8rem] font-black leading-none text-wok-black/[0.035] text-center">
+      <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 select-none font-display md:text-[10rem] text-[6rem] font-black leading-none text-wok-black/[0.035] text-center sm:text-[8rem] lg:text-[12rem]">
         KURO<br />SIZZLERS
       </div>
 
