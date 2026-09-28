@@ -111,6 +111,7 @@ export default function Header() {
     left: 0,
     behavior: "instant",
   });
+  setMenuOpen(false);
 }, [pathname]);
 
   return (
