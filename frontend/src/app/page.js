@@ -12,12 +12,6 @@ import ReservationCTA from "./components/landing/reservationCTA";
 
 export default function Home() {
 
-  // page opens on the top
-  useEffect(() => {
-  if (typeof window !== "undefined") {
-    window.scrollTo(0, 0);
-  }
-},[]) 
   return (
     <>
     <section className="relative w-screen bg-wok-black">
