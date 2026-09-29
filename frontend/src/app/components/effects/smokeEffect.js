@@ -1,45 +1,61 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 export default function SmokeEffect({
   opacity = 0.5,
   className = "",
 }) {
   const videoRef = useRef(null);
-  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
-
     if (!video) return;
 
-    // Important for autoplay reliability
     video.muted = true;
     video.defaultMuted = true;
     video.playsInline = true;
 
-    const handleReady = () => {
-      setIsReady(true);
+    const tryPlay = () => {
+      if (!video.paused) return;
 
-      video.play().catch(() => {
-        // Browser may temporarily block playback.
-        // The video can retry when it becomes playable.
-      });
+      const promise = video.play();
+
+      if (promise !== undefined) {
+        promise.catch(() => {
+          // Decorative effect:
+          // another retry will happen when video becomes ready
+        });
+      }
     };
 
-    // Video may already be ready before React event fires
-    if (video.readyState >= 3) {
-      handleReady();
-    } else {
-      video.addEventListener("canplay", handleReady, { once: true });
-    }
+    // Initial attempt
+    tryPlay();
 
-    // Explicitly start loading
-    video.load();
+    // Retry as soon as enough video data becomes available
+    video.addEventListener("loadeddata", tryPlay);
+    video.addEventListener("canplay", tryPlay);
+
+    // If user returns to the tab
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        tryPlay();
+      }
+    };
+
+    document.addEventListener(
+      "visibilitychange",
+      handleVisibilityChange
+    );
 
     return () => {
-      video.removeEventListener("canplay", handleReady);
+      video.removeEventListener("loadeddata", tryPlay);
+      video.removeEventListener("canplay", tryPlay);
+
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange
+      );
     };
   }, []);
 
@@ -59,14 +75,12 @@ export default function SmokeEffect({
         disablePictureInPicture
         controlsList="nodownload nofullscreen noplaybackrate"
         tabIndex={-1}
-        onLoadedData={() => setIsReady(true)}
         className="absolute inset-0 h-full w-full object-cover"
         style={{
-          opacity: isReady ? opacity : 0,
+          opacity,
           transform: "translateZ(0)",
           backfaceVisibility: "hidden",
           WebkitBackfaceVisibility: "hidden",
-          transition: "opacity 0.3s ease",
         }}
       >
         <source
