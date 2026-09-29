@@ -160,3 +160,30 @@ a {
     opacity: 0;
   }
 }
+
+
+/* Safari / WebKit native video play button */
+.smoke-video::-webkit-media-controls {
+  display: none !important;
+  -webkit-appearance: none;
+}
+
+.smoke-video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none;
+}
+
+.smoke-video::-webkit-media-controls-play-button {
+  display: none !important;
+  -webkit-appearance: none;
+}
+
+.smoke-video::-webkit-media-controls-overlay-play-button {
+  display: none !important;
+  -webkit-appearance: none;
+}
+
+.smoke-video {
+  pointer-events: none;
+  -webkit-appearance: none;
+}

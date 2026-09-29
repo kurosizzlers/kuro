@@ -75,7 +75,7 @@ export default function SmokeEffect({
         disablePictureInPicture
         controlsList="nodownload nofullscreen noplaybackrate"
         tabIndex={-1}
-        className="absolute inset-0 h-full w-full object-cover"
+        className="smoke-video absolute inset-0 h-full w-full object-cover"
         style={{
           opacity,
           transform: "translateZ(0)",
