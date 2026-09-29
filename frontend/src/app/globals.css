@@ -162,7 +162,13 @@ a {
 }
 
 
-/* Safari / WebKit native video play button */
+/* Decorative smoke video */
+.smoke-video {
+  pointer-events: none;
+  -webkit-appearance: none;
+}
+
+/* Safari / WebKit native media UI */
 .smoke-video::-webkit-media-controls {
   display: none !important;
   -webkit-appearance: none;
@@ -180,10 +186,5 @@ a {
 
 .smoke-video::-webkit-media-controls-overlay-play-button {
   display: none !important;
-  -webkit-appearance: none;
-}
-
-.smoke-video {
-  pointer-events: none;
   -webkit-appearance: none;
 }
