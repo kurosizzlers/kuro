@@ -1,17 +1,37 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function SmokeEffect({
   opacity = 0.5,
   className = "",
 }) {
   const videoRef = useRef(null);
+  const [videoSrc, setVideoSrc] = useState(null);
+
+  useEffect(() => {
+    // Detect Safari
+    const userAgent = navigator.userAgent;
+
+    const isSafari =
+      /Safari/i.test(userAgent) &&
+      !/Chrome|CriOS|Chromium|Edg|OPR|FxiOS/i.test(userAgent);
+
+    // Safari → MP4
+    // Other browsers → lightweight WebM
+    setVideoSrc(
+      isSafari
+        ? "/smokeEffect/smoke.mp4"
+        : "/smokeEffect/smoke.webm"
+    );
+  }, []);
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
 
+    if (!video || !videoSrc) return;
+
+    // Autoplay requirements
     video.muted = true;
     video.defaultMuted = true;
     video.playsInline = true;
@@ -19,12 +39,12 @@ export default function SmokeEffect({
     const tryPlay = () => {
       if (!video.paused) return;
 
-      const promise = video.play();
+      const playPromise = video.play();
 
-      if (promise !== undefined) {
-        promise.catch(() => {
-          // Decorative effect:
-          // another retry will happen when video becomes ready
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // If playback isn't possible yet,
+          // canplay / loadeddata will retry.
         });
       }
     };
@@ -32,11 +52,12 @@ export default function SmokeEffect({
     // Initial attempt
     tryPlay();
 
-    // Retry as soon as enough video data becomes available
+    // Retry when video has enough data
     video.addEventListener("loadeddata", tryPlay);
     video.addEventListener("canplay", tryPlay);
 
-    // If user returns to the tab
+    // Resume if browser pauses video after
+    // switching tabs / returning to page
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         tryPlay();
@@ -57,42 +78,35 @@ export default function SmokeEffect({
         handleVisibilityChange
       );
     };
-  }, []);
+  }, [videoSrc]);
 
   return (
     <div
       className={`pointer-events-none absolute inset-0 z-0 overflow-hidden mix-blend-screen ${className}`}
       aria-hidden="true"
     >
-      <video
-        ref={videoRef}
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
-        controls={false}
-        disablePictureInPicture
-        controlsList="nodownload nofullscreen noplaybackrate"
-        tabIndex={-1}
-        className="smoke-video absolute inset-0 h-full w-full object-cover"
-        style={{
-          opacity,
-          transform: "translateZ(0)",
-          backfaceVisibility: "hidden",
-          WebkitBackfaceVisibility: "hidden",
-        }}
-      >
-        <source
-          src="/smokeEffect/smoke.webm"
-          type="video/webm"
+      {videoSrc && (
+        <video
+          ref={videoRef}
+          src={videoSrc}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          controls={false}
+          disablePictureInPicture
+          controlsList="nodownload nofullscreen noplaybackrate"
+          tabIndex={-1}
+          className="smoke-video absolute inset-0 h-full w-full object-cover"
+          style={{
+            opacity,
+            transform: "translateZ(0)",
+            backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
+          }}
         />
-
-        <source
-          src="/smokeEffect/smoke.mp4"
-          type="video/mp4"
-        />
-      </video>
+      )}
     </div>
   );
 }
