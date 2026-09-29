@@ -164,27 +164,19 @@ a {
 
 /* Decorative smoke video */
 .smoke-video {
-  pointer-events: none;
-  -webkit-appearance: none;
+  pointer-events: none !important;
+  -webkit-appearance: none !important;
 }
 
-/* Safari / WebKit native media UI */
-.smoke-video::-webkit-media-controls {
+/* Hide Safari native media controls & play buttons completely */
+.smoke-video::-webkit-media-controls,
+.smoke-video::-webkit-media-controls-start-playback-button,
+.smoke-video::-webkit-media-controls-play-button,
+.smoke-video::-webkit-media-controls-overlay-play-button,
+.smoke-video::-webkit-media-controls-panel,
+.smoke-video::-webkit-media-controls-container {
   display: none !important;
-  -webkit-appearance: none;
-}
-
-.smoke-video::-webkit-media-controls-start-playback-button {
-  display: none !important;
-  -webkit-appearance: none;
-}
-
-.smoke-video::-webkit-media-controls-play-button {
-  display: none !important;
-  -webkit-appearance: none;
-}
-
-.smoke-video::-webkit-media-controls-overlay-play-button {
-  display: none !important;
-  -webkit-appearance: none;
+  -webkit-appearance: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
