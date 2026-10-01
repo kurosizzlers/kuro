@@ -162,14 +162,14 @@ a {
 }
 
 
-/* Decorative smoke video */
+/* Decorative smoke video setup */
 .smoke-video {
   pointer-events: none !important;
   -webkit-appearance: none !important;
   outline: none !important;
 }
 
-/* Force-hide Safari UI overlays in all loading states */
+/* Force-hide Safari UI controls & Play Button overlays */
 .smoke-video::-webkit-media-controls,
 .smoke-video::-webkit-media-controls-start-playback-button,
 .smoke-video::-webkit-media-controls-play-button,
@@ -182,4 +182,36 @@ a {
   opacity: 0 !important;
   pointer-events: none !important;
   visibility: hidden !important;
+}
+
+/* Low Power Mode Smoke Animation */
+.battery-saver-smoke-fallback {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.smoke-puff {
+  position: absolute;
+  bottom: -25vh;
+  width: 50vw;
+  height: 50vw;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(200, 200, 200, 0.06) 50%,
+    transparent 80%
+  );
+  filter: blur(50px);
+  animation: smoke-rise 9s infinite ease-out;
+}
+
+.smoke-puff.puff-1 {
+  left: 20%;
+}
+
+.smoke-puff.puff-2 {
+  left: 50%;
+  animation-delay: 4.5s;
 }
