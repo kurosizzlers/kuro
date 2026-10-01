@@ -25,7 +25,7 @@ export default function SmokeEffect({ opacity = 0.5, className = "" }) {
     );
   }, []);
 
-  useEffect(() => {
+ useEffect(() => {
     if (!videoSrc) return;
 
     const video = videoRef.current;
@@ -35,12 +35,33 @@ export default function SmokeEffect({ opacity = 0.5, className = "" }) {
     video.muted = true;
     video.defaultMuted = true;
 
+    // Low Power Mode me touch/scroll hote hi video start karne ka fallback
+    const handleUserInteraction = () => {
+      if (video.paused) {
+        video.play().catch(() => {});
+      }
+      window.removeEventListener("touchstart", handleUserInteraction);
+      window.removeEventListener("scroll", handleUserInteraction);
+      window.removeEventListener("click", handleUserInteraction);
+    };
+
     const playPromise = video.play();
     if (playPromise !== undefined) {
       playPromise.catch((error) => {
-        console.warn("Autoplay attempt handled:", error);
+        console.warn("Autoplay blocked (likely Low Power Mode), waiting for interaction:", error);
+        
+        // Batter Saver active hone par pehle interaction par play kar do
+        window.addEventListener("touchstart", handleUserInteraction, { passive: true, once: true });
+        window.addEventListener("scroll", handleUserInteraction, { passive: true, once: true });
+        window.addEventListener("click", handleUserInteraction, { passive: true, once: true });
       });
     }
+
+    return () => {
+      window.removeEventListener("touchstart", handleUserInteraction);
+      window.removeEventListener("scroll", handleUserInteraction);
+      window.removeEventListener("click", handleUserInteraction);
+    };
   }, [videoSrc]);
 
   return (
