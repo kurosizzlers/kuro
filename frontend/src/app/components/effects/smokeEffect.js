@@ -59,7 +59,7 @@ export default function SmokeEffect({
         muted
         loop
         playsInline
-        webkit-playsinline="true"
+        webkitPlaysInline="true"
         preload="auto"
         controls={false}
         disablePictureInPicture
