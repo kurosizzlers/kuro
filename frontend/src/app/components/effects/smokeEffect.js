@@ -11,33 +11,12 @@ export default function SmokeEffect({ opacity = 0.5, className = "" }) {
     const video = videoRef.current;
     if (!video) return;
 
-    // Safari autoplay requirement setup
+    // Direct JS property assignment for iOS WebKit compatibility
     video.muted = true;
     video.defaultMuted = true;
     video.playsInline = true;
 
     let timeoutId;
-
-    const attemptPlay = async () => {
-      try {
-        await video.play();
-        setIsPlaying(true);
-        setIsLowPowerMode(false);
-      } catch (error) {
-        console.warn("Autoplay / Safari power policy fallback:", error);
-        // Fallback to CSS animation without unmounting video layer
-        setIsLowPowerMode(true);
-      }
-    };
-
-    // Safety timeout for silent block
-    timeoutId = setTimeout(() => {
-      if (!isPlaying && video.paused) {
-        setIsLowPowerMode(true);
-      }
-    }, 2000);
-
-    attemptPlay();
 
     const handlePlaying = () => {
       setIsPlaying(true);
@@ -45,27 +24,56 @@ export default function SmokeEffect({ opacity = 0.5, className = "" }) {
       if (timeoutId) clearTimeout(timeoutId);
     };
 
+    const attemptPlay = () => {
+      const playPromise = video.play();
+
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true);
+            setIsLowPowerMode(false);
+            if (timeoutId) clearTimeout(timeoutId);
+          })
+          .catch((error) => {
+            console.warn("Apple WebKit Autoplay Blocked:", error);
+            setIsLowPowerMode(true);
+            if (timeoutId) clearTimeout(timeoutId);
+          });
+      }
+    };
+
+    // Safety fallback for Apple Low Power Mode
+    timeoutId = setTimeout(() => {
+      if (video.paused) {
+        setIsLowPowerMode(true);
+      }
+    }, 2000);
+
     video.addEventListener("playing", handlePlaying);
+    
+    // Attempt play immediately
+    attemptPlay();
 
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
       video.removeEventListener("playing", handlePlaying);
     };
-  }, []);
+  }, []); // Empty dependency array prevents re-render loop on iOS
 
   return (
     <div
       className={`pointer-events-none absolute inset-0 z-0 overflow-hidden ${className}`}
       style={{
-        // Safari Hardware Acceleration & Stacking fix
-        WebkitTransform: "translate3d(0, 0, 0)",
-        transform: "translate3d(0, 0, 0)",
+        // Forces Apple devices to create a dedicated GPU hardware layer
+        WebkitTransform: "translate3d(0,0,0)",
+        transform: "translate3d(0,0,0)",
         WebkitBackfaceVisibility: "hidden",
         backfaceVisibility: "hidden",
+        isolation: "isolate", // Fixes blend-mode rendering glitches on Apple
       }}
       aria-hidden="true"
     >
-      {/* Video Element - Always kept in DOM to prevent Safari unmount render crash */}
+      {/* 1. Video Element (Kept in DOM so Apple GPU doesn't destroy render pipeline) */}
       <video
         ref={videoRef}
         autoPlay
@@ -84,14 +92,14 @@ export default function SmokeEffect({ opacity = 0.5, className = "" }) {
           WebkitMixBlendMode: "screen",
         }}
       >
-        {/* Safari optimization: MP4 pehle ranking me rakha hai */}
+        {/* Apple MP4 Pehle rakha hai kyunki WebM Apple GPU crash kar deta hai */}
         <source src="/smokeEffect/smoke.mp4" type="video/mp4" />
         <source src="/smokeEffect/smoke.webm" type="video/webm" />
       </video>
 
-      {/* Fallback CSS Smoke for Low Power Mode */}
+      {/* 2. Low Power Mode / iOS Fallback */}
       {isLowPowerMode && (
-        <div 
+        <div
           className="battery-saver-smoke-fallback absolute inset-0 h-full w-full"
           style={{
             mixBlendMode: "screen",
