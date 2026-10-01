@@ -519,20 +519,20 @@ export default function ContactPage() {
 
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                   <div>
-                    <label
-                      htmlFor="date"
-                      className="mb-2 block font-body text-xs font-extrabold uppercase tracking-wide text-white/80"
-                    >
-                      Preferred Date
-                    </label>
+  <label
+    htmlFor="date"
+    className="mb-2 block font-body text-xs font-extrabold uppercase tracking-wide text-white/80"
+  >
+    Preferred Date
+  </label>
 
-                    <input
-                      id="date"
-                      name="date"
-                      type="date"
-                      className="w-full rounded-lg border border-white/10 bg-charcoal-card px-4 py-3.5 font-body text-sm text-white outline-none transition focus:border-primary"
-                    />
-                  </div>
+  <input
+    id="date"
+    name="date"
+    type="date"
+    className="w-full max-w-full min-w-0 appearance-none rounded-lg border border-white/10 bg-charcoal-card px-4 py-3.5 font-body text-sm text-white outline-none transition focus:border-primary [color-scheme:dark]"
+  />
+</div>
 
                   <div>
                     <label
