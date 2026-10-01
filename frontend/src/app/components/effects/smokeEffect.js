@@ -11,87 +11,93 @@ export default function SmokeEffect({ opacity = 0.5, className = "" }) {
     const video = videoRef.current;
     if (!video) return;
 
+    // Safari autoplay requirement setup
     video.muted = true;
     video.defaultMuted = true;
+    video.playsInline = true;
 
-    // Timeout: Safari battery saver silent block safety
-    const timeoutId = setTimeout(() => {
-      if (!isPlaying) {
+    let timeoutId;
+
+    const attemptPlay = async () => {
+      try {
+        await video.play();
+        setIsPlaying(true);
+        setIsLowPowerMode(false);
+      } catch (error) {
+        console.warn("Autoplay / Safari power policy fallback:", error);
+        // Fallback to CSS animation without unmounting video layer
         setIsLowPowerMode(true);
       }
-    }, 2500);
-
-    const attemptPlay = () => {
-      const playPromise = video.play();
-
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            setIsPlaying(true);
-            setIsLowPowerMode(false);
-            clearTimeout(timeoutId);
-          })
-          .catch((error) => {
-            // Safari Low Power Mode ya Autoplay Policy block trigger hua
-            console.warn("Autoplay blocked (likely Low Power Mode):", error);
-            setIsLowPowerMode(true);
-            clearTimeout(timeoutId);
-          });
-      }
     };
+
+    // Safety timeout for silent block
+    timeoutId = setTimeout(() => {
+      if (!isPlaying && video.paused) {
+        setIsLowPowerMode(true);
+      }
+    }, 2000);
 
     attemptPlay();
 
     const handlePlaying = () => {
       setIsPlaying(true);
       setIsLowPowerMode(false);
-      clearTimeout(timeoutId);
+      if (timeoutId) clearTimeout(timeoutId);
     };
 
     video.addEventListener("playing", handlePlaying);
-    video.addEventListener("loadeddata", attemptPlay);
 
     return () => {
-      clearTimeout(timeoutId);
+      if (timeoutId) clearTimeout(timeoutId);
       video.removeEventListener("playing", handlePlaying);
-      video.removeEventListener("loadeddata", attemptPlay);
     };
-  }, [isPlaying]);
+  }, []);
 
   return (
     <div
-      className={`pointer-events-none absolute inset-0 z-0 overflow-hidden mix-blend-screen ${className}`}
+      className={`pointer-events-none absolute inset-0 z-0 overflow-hidden ${className}`}
+      style={{
+        // Safari Hardware Acceleration & Stacking fix
+        WebkitTransform: "translate3d(0, 0, 0)",
+        transform: "translate3d(0, 0, 0)",
+        WebkitBackfaceVisibility: "hidden",
+        backfaceVisibility: "hidden",
+      }}
       aria-hidden="true"
     >
-      {/* 1. Video Player (Only rendered when NOT in Battery Saver mode) */}
-      {!isLowPowerMode && (
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          loop
-          playsInline
-          webkitPlaysInline={true}
-          preload="auto"
-          disablePictureInPicture
-          controlsList="nodownload nofullscreen noplaybackrate"
-          tabIndex={-1}
-          className="smoke-video absolute inset-0 h-full w-full object-cover transition-opacity duration-500"
+      {/* Video Element - Always kept in DOM to prevent Safari unmount render crash */}
+      <video
+        ref={videoRef}
+        autoPlay
+        muted
+        loop
+        playsInline
+        webkit-playsinline="true"
+        preload="auto"
+        disablePictureInPicture
+        controlsList="nodownload nofullscreen noplaybackrate"
+        tabIndex={-1}
+        className="smoke-video absolute inset-0 h-full w-full object-cover transition-opacity duration-700"
+        style={{
+          opacity: isPlaying && !isLowPowerMode ? opacity : 0,
+          mixBlendMode: "screen",
+          WebkitMixBlendMode: "screen",
+        }}
+      >
+        {/* Safari optimization: MP4 pehle ranking me rakha hai */}
+        <source src="/smokeEffect/smoke.mp4" type="video/mp4" />
+        <source src="/smokeEffect/smoke.webm" type="video/webm" />
+      </video>
+
+      {/* Fallback CSS Smoke for Low Power Mode */}
+      {isLowPowerMode && (
+        <div 
+          className="battery-saver-smoke-fallback absolute inset-0 h-full w-full"
           style={{
-            opacity: isPlaying ? opacity : 0,
-            transform: "translateZ(0)",
-            backfaceVisibility: "hidden",
-            WebkitBackfaceVisibility: "hidden",
+            mixBlendMode: "screen",
+            WebkitMixBlendMode: "screen",
           }}
         >
-          <source src="/smokeEffect/smoke.webm" type="video/webm" />
-          <source src="/smokeEffect/smoke.mp4" type="video/mp4" />
-        </video>
-      )}
-
-      {/* 2. Low Power Mode Fallback (CSS Keyframe Smoke Particles) */}
-      {isLowPowerMode && (
-        <div className="battery-saver-smoke-fallback absolute inset-0 h-full w-full">
           <div
             className="smoke-puff puff-1"
             style={{ "--smoke-drift": "25vw", "--smoke-scale": "1.6", opacity }}
