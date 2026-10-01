@@ -161,21 +161,21 @@ a {
   }
 }
 
-/* Decorative smoke video setup */
+/* Decorative smoke video setup for Apple / WebKit */
 .smoke-video {
   pointer-events: none !important;
   -webkit-appearance: none !important;
   outline: none !important;
-  
-  /* Force Safari Hardware Compositing */
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  will-change: opacity, transform;
+
+  /* Apple WebKit Hardware Acceleration Locks */
+  -webkit-transform: translate3d(0, 0, 0) !important;
+  transform: translate3d(0, 0, 0) !important;
+  -webkit-backface-visibility: hidden !important;
+  backface-visibility: hidden !important;
+  will-change: opacity;
 }
 
-/* Force-hide Safari UI controls & Play Button overlays */
+/* Hide Apple Native Media Controls */
 .smoke-video::-webkit-media-controls,
 .smoke-video::-webkit-media-controls-start-playback-button,
 .smoke-video::-webkit-media-controls-play-button,
