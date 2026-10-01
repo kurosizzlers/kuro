@@ -166,17 +166,20 @@ a {
 .smoke-video {
   pointer-events: none !important;
   -webkit-appearance: none !important;
+  outline: none !important;
 }
 
-/* Hide Safari native media controls & play buttons completely */
+/* Force-hide Safari UI overlays in all loading states */
 .smoke-video::-webkit-media-controls,
 .smoke-video::-webkit-media-controls-start-playback-button,
 .smoke-video::-webkit-media-controls-play-button,
 .smoke-video::-webkit-media-controls-overlay-play-button,
 .smoke-video::-webkit-media-controls-panel,
-.smoke-video::-webkit-media-controls-container {
+.smoke-video::-webkit-media-controls-container,
+.smoke-video::-webkit-media-controls-enclosure {
   display: none !important;
   -webkit-appearance: none !important;
   opacity: 0 !important;
   pointer-events: none !important;
+  visibility: hidden !important;
 }
