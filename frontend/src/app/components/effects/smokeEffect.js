@@ -5,19 +5,19 @@ import { useEffect, useRef, useState } from "react";
 export default function SmokeEffect({ opacity = 0.5, className = "" }) {
   const videoRef = useRef(null);
   const [videoSrc, setVideoSrc] = useState(null);
+  const [useWebP, setUseWebP] = useState(false);
 
   useEffect(() => {
-    // 1. OS & Browser Detection
+    // 1. Apple OS / WebKit Detection
     const userAgent = window.navigator.userAgent || window.navigator.vendor || "";
     const platform = window.navigator.platform || "";
 
-    // Check for iOS, iPad OS, macOS, or Safari/WebKit engine
     const isAppleDevice =
       /iPad|iPhone|iPod|Macintosh|MacIntel|MacPPC|Mac68K/i.test(platform) ||
-      (/Macintosh/i.test(userAgent) && navigator.maxTouchPoints > 1) || // iPadOS desktop mode check
-      /Safari/i.test(userAgent) && !/Chrome/i.test(userAgent);
+      (/Macintosh/i.test(userAgent) && navigator.maxTouchPoints > 1) ||
+      (/Safari/i.test(userAgent) && !/Chrome/i.test(userAgent));
 
-    // Apple devices ko MP4, bakis ko lightweight WebM
+    
     setVideoSrc(
       isAppleDevice
         ? "/smokeEffect/smoke.mp4"
@@ -25,43 +25,30 @@ export default function SmokeEffect({ opacity = 0.5, className = "" }) {
     );
   }, []);
 
- useEffect(() => {
+  useEffect(() => {
     if (!videoSrc) return;
 
     const video = videoRef.current;
     if (!video) return;
 
-    // Direct JS assignments for WebKit compatibility
+    // Direct WebKit Muted Bindings
     video.muted = true;
     video.defaultMuted = true;
 
-    // Low Power Mode me touch/scroll hote hi video start karne ka fallback
-    const handleUserInteraction = () => {
-      if (video.paused) {
-        video.play().catch(() => {});
-      }
-      window.removeEventListener("touchstart", handleUserInteraction);
-      window.removeEventListener("scroll", handleUserInteraction);
-      window.removeEventListener("click", handleUserInteraction);
-    };
-
+    // Autoplay attempt
     const playPromise = video.play();
-    if (playPromise !== undefined) {
-      playPromise.catch((error) => {
-        console.warn("Autoplay blocked (likely Low Power Mode), waiting for interaction:", error);
-        
-        // Batter Saver active hone par pehle interaction par play kar do
-        window.addEventListener("touchstart", handleUserInteraction, { passive: true, once: true });
-        window.addEventListener("scroll", handleUserInteraction, { passive: true, once: true });
-        window.addEventListener("click", handleUserInteraction, { passive: true, once: true });
-      });
-    }
 
-    return () => {
-      window.removeEventListener("touchstart", handleUserInteraction);
-      window.removeEventListener("scroll", handleUserInteraction);
-      window.removeEventListener("click", handleUserInteraction);
-    };
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          // Normal mode: Video successfully playing
+          setUseWebP(false);
+        })
+        .catch(() => {
+          // Low Power Mode active: Video autoplay blocked -> Instant WebP Fallback
+          setUseWebP(true);
+        });
+    }
   }, [videoSrc]);
 
   return (
@@ -76,30 +63,45 @@ export default function SmokeEffect({ opacity = 0.5, className = "" }) {
       }}
       aria-hidden="true"
     >
-      {videoSrc && (
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          loop
-          playsInline
-          webkit-playsinline="true"
-          preload="metadata"
-          disablePictureInPicture
-          controlsList="nodownload nofullscreen noplaybackrate"
-          tabIndex={-1}
-          className="smoke-video absolute inset-0 h-full w-full object-cover"
+      {/* Fallback 1: Low Power Mode / Battery Saver WebP Image render */}
+      {useWebP ? (
+        <img
+          src="/smokeEffect/smoke.webp"
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
           style={{
             opacity: opacity,
             mixBlendMode: "screen",
             WebkitMixBlendMode: "screen",
           }}
-        >
-          <source
-            src={videoSrc}
-            type={videoSrc.endsWith(".mp4") ? "video/mp4" : "video/webm"}
-          />
-        </video>
+        />
+      ) : (
+        /* Normal Mode: Smooth Autoplay Video */
+        videoSrc && (
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            loop
+            playsInline
+            webkit-playsinline="true"
+            preload="metadata"
+            disablePictureInPicture
+            controlsList="nodownload nofullscreen noplaybackrate"
+            tabIndex={-1}
+            className="smoke-video absolute inset-0 h-full w-full object-cover"
+            style={{
+              opacity: opacity,
+              mixBlendMode: "screen",
+              WebkitMixBlendMode: "screen",
+            }}
+          >
+            <source
+              src={videoSrc}
+              type={videoSrc.endsWith(".mp4") ? "video/mp4" : "video/webm"}
+            />
+          </video>
+        )
       )}
     </div>
   );
